@@ -8,11 +8,10 @@ on:
     
 defaults:
   run:
-    working-directory: ./src/TestGitHubAction
+    working-directory: ./src/TesGithubAction
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
