@@ -1,66 +1,38 @@
-# This workflow will build and push a .NET Core application to an Azure Web App on every push to the master branch.
-#
-# To configure this workflow:
-#
-# 1. Set up a secret in your repository named AZURE_WEBAPP_PUBLISH_PROFILE with the value of your Azure publish profile.
-#    Get the publish profile from the portal: https://docs.microsoft.com/visualstudio/deployment/tutorial-import-publish-settings-azure?view=vs-2019#create-the-publish-settings-file-in-azure-app-service
-#
-# 2. Change the values for the AZURE_WEBAPP_NAME, AZURE_WEBAPP_PACKAGE_PATH and NETCORE_VERSION environment variables  (below).
-#
-# For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
-# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
-name: "Build and Deploy"
-
+name: Build and deploy .NET Core app to Windows WebApp TestGitHubAction123
 on:
   push:
     branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
-
+    - main
 env:
-  AZURE_WEBAPP_NAME: TestGitHubAction123  # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '5.0.x'                    # set this to the .NET Core version to use
-  
-defaults:
-  run:
-    working-directory: ./src/TesGithubAction
-
-
+  AZURE_WEBAPP_NAME: TestGitHubAction123
+  AZURE_WEBAPP_PACKAGE_PATH: TesGithubAction/publish
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 5.0.x
+  WORKING_DIRECTORY: TesGithubAction
 jobs:
-  build:
-    name: Build and Deploy
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    
-    - name: Setup .NET SDK ${{ env.DOTNET_VERSION }}
+    - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-    
-    - name: Restore packages
-      run: dotnet restore
-
-    - name: Build app
-      run: dotnet build --configuration Release --no-restore
-
-    - name: Test app
-      run: dotnet test --no-build
-
-    - name: Publish app for deploy
-      run: dotnet publish --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-    - name: 'Deploy to Azure WebApp'
-      uses: azure/webapps-deploy@v1
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Test
+      run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
+    - name: Publish
+      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_TEST_GITHUB_ACTION_PUBLISH_PROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
+        publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
       with:
