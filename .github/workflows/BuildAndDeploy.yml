@@ -24,6 +24,11 @@ env:
   AZURE_WEBAPP_NAME: TestGitHubAction  # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: './published'      # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '5.0.x'                    # set this to the .NET Core version to use
+  
+defaults:
+  run:
+    working-directory: ./src/TesGithubAction
+
 
 jobs:
   build:
